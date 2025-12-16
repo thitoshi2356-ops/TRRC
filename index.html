@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ラグビー レフェリー ルール学習アプリ</title>
+    <style>
+        body { font-family: sans-serif; margin: 0; padding: 20px; background-color: #f4f7f6; }
+        .container { max-width: 800px; margin: 0 auto; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #003366; border-bottom: 2px solid #ffcc00; padding-bottom: 10px; margin-bottom: 20px; }
+        #app-content { display: none; margin-top: 20px; }
+        .auth-form { margin-bottom: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 5px; }
+        .auth-form input { padding: 10px; margin-bottom: 10px; width: calc(100% - 22px); display: block; }
+        .auth-form button { padding: 10px 15px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏉 レフェリー・ルール学習ポータル</h1>
+        
+        <div id="auth-section">
+            <p>アカウントにログインするか、新規登録してください。</p>
+            <div class="auth-form">
+                <h2>ログイン</h2>
+                <input type="email" id="login-email" placeholder="メールアドレス" required>
+                <input type="password" id="login-password" placeholder="パスワード" required>
+                <button onclick="handleLogin()">ログイン</button>
+            </div>
+        </div>
+
+        <div id="app-content">
+            <p id="user-status">ようこそ！</p>
+            <button onclick="handleLogout()">ログアウト</button>
+            
+            <h2>📖 ルール参照</h2>
+            <p>ここにワールドラグビーの競技規則が表示されます。</p>
+            <div id="rule-display">
+                <p>Law 1: 競技の場 — ここに詳細なルールが入ります。</p>
+            </div>
+            
+            <h2>🧠 クイズ・テスト</h2>
+            <p>クイズ機能は次のステップで実装します。</p>
+        </div>
+        
+        <p id="error-message" style="color: red; margin-top: 10px;"></p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="app.js"></script> 
+</body>
+</html>
