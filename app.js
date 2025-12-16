@@ -1,59 +1,66 @@
-// 注意: このコードはVercelにデプロイするために最低限の構造だけを持っています。
-// 実際にFirebase Authenticationを動かすには、Firebaseプロジェクトの設定情報が必要です。
-// そのため、以下のコードは「認証ボタンが押された時の動作を示すモック」として扱ってください。
+// TRRC: フロントエンドJavaScript (ルール参照機能の追加)
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 画面の初期状態をセット
     const authSection = document.getElementById('auth-section');
     const appContent = document.getElementById('app-content');
     const userStatus = document.getElementById('user-status');
     const errorMessage = document.getElementById('error-message');
+    const ruleDisplay = document.getElementById('rule-display'); // ルール表示エリア
 
-    // ユーザーの状態をチェックするモック関数
+    // 認証状態チェックのモック
     function checkAuthState() {
-        // ここにFirebaseの認証状態チェックロジックが入ります
-        const userIsLoggedIn = false; // 初期状態はログアウト中
-
+        const userIsLoggedIn = true; // ★一時的に「ログイン済み」と仮定
+        // ... (省略: 認証後の画面切り替えロジック) ...
         if (userIsLoggedIn) {
             authSection.style.display = 'none';
             appContent.style.display = 'block';
-            userStatus.textContent = 'ようこそ、レフェリーさん！';
+            userStatus.textContent = 'ようこそ、TRRC会員さん！';
+            loadRules(); // ★ログイン後、ルールを読み込み開始
         } else {
             authSection.style.display = 'block';
             appContent.style.display = 'none';
         }
     }
 
-    // ログイン処理のモック
-    window.handleLogin = function() {
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
+    // --- 新規追加: ルールデータをAPIから取得し、画面に表示する関数 ---
+    async function loadRules() {
+        ruleDisplay.innerHTML = 'ルールデータを読み込み中...';
+        
+        try {
+            // VercelにデプロイしたAPIエンドポイント（/api/get-rules）を呼び出す
+            const response = await fetch('/api/get-rules');
+            const rules = await response.json();
 
-        if (email && password) {
-            errorMessage.textContent = 'ログイン処理を開始しました（本物のFirebase認証は次のステップで組み込みます）';
-            // 実際はここで firebase.auth().signInWithEmailAndPassword が呼ばれます
-            setTimeout(() => {
-                // 成功したと仮定して画面を切り替える
-                const success = true;
-                if (success) {
-                    authSection.style.display = 'none';
-                    appContent.style.display = 'block';
-                    userStatus.textContent = `ようこそ、${email}さん！`;
-                    errorMessage.textContent = '';
-                }
-            }, 1000);
-        } else {
-            errorMessage.textContent = 'メールアドレスとパスワードを入力してください。';
+            if (response.ok) {
+                let htmlContent = '';
+                let currentLaw = null;
+                
+                // 取得したルールデータを整形して表示
+                rules.forEach(rule => {
+                    if (rule.law_number !== currentLaw) {
+                        if (currentLaw !== null) htmlContent += '</div>';
+                        htmlContent += `<div class="law-section"><h3>Law ${rule.law_number}: ${rule.section_title}</h3>`;
+                        currentLaw = rule.law_number;
+                    }
+                    htmlContent += `<p><strong>${rule.section_title}:</strong> ${rule.content_jp}</p>`;
+                });
+                if (currentLaw !== null) htmlContent += '</div>';
+
+                ruleDisplay.innerHTML = htmlContent;
+            } else {
+                ruleDisplay.innerHTML = `エラー: サーバーからルールデータを取得できませんでした。エラー詳細: ${rules.error}`;
+            }
+
+        } catch (error) {
+            console.error('Fetch Error:', error);
+            ruleDisplay.innerHTML = '通信エラーが発生しました。Vercelのログを確認してください。';
         }
-    };
+    }
+    // -----------------------------------------------------------------
 
-    // ログアウト処理のモック
-    window.handleLogout = function() {
-        // 実際はここで firebase.auth().signOut() が呼ばれます
-        authSection.style.display = 'block';
-        appContent.style.display = 'none';
-        errorMessage.textContent = 'ログアウトしました。';
-    };
+    // ログイン・ログアウトのモック関数（省略）
+    window.handleLogin = function() { /* ... */ };
+    window.handleLogout = function() { /* ... */ };
 
     checkAuthState();
 });
