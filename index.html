@@ -3,58 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRRC - Rugby Referee Companion 2025</title>
+    <title>TRRC - Rugby Referee Challenge</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div id="app">
-        <header>
-            <div class="header-content">
-                <h1>TRRC 2025</h1>
-                <p class="subtitle">Rugby Referee Companion</p>
+    <div class="app-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <h1 class="logo">TRRC</h1>
+                <p class="subtitle">Rugby Referee Challenge</p>
             </div>
-            <nav>
-                <div class="tab-container">
-                    <button class="tab-btn active" data-tab="rules">📖 ルール参照</button>
-                    <button class="tab-btn" data-tab="quiz">❓ クイズ</button>
-                    <button class="tab-btn" data-tab="stats">📊 学習記録</button>
+            
+            <div class="user-profile">
+                <div class="rank-info">
+                    <span class="rank-label">称号:</span>
+                    <span id="user-rank" class="rank-name">スクラム見習い</span>
                 </div>
-            </nav>
-        </header>
+                <div class="xp-container">
+                    <div id="xp-bar" class="xp-bar-fill" style="width: 35%;"></div>
+                </div>
+            </div>
 
-        <main>
-            <section id="rules" class="content-section active">
-                <div class="search-area">
-                    <input type="text" id="rule-search" placeholder="キーワード検索（例：タックル、オフサイド、スクラム）">
-                    
-                    <div class="filter-container">
-                        <p class="filter-label">条文（Law）を選択:</p>
-                        <div class="filter-chips" id="law-filters">
-                            <button class="filter-btn active" data-law="all">すべて</button>
-                            </div>
-                    </div>
-                </div>
+            <ul class="nav-menu">
+                <li class="nav-header">📖 ルール学習 (Input)</li>
+                <li class="nav-item active" data-category="15人制">15人制 Laws</li>
+                <li class="nav-item" data-category="用語定義">用語・定義マスター</li>
+                <li class="nav-item" data-category="7人制">7人制 競技規則</li>
+                <li class="nav-item" data-category="19歳未満">19歳未満 (安全規定)</li>
+                <li class="nav-item" data-category="ラグビー憲章">ラグビー憲章</li>
                 
-                <div id="rule-display">
-                    </div>
-            </section>
+                <li class="nav-header">🧠 実戦テスト (Output)</li>
+                <li class="nav-item quiz" id="btn-quiz-decision">判定適用クイズ</li>
+                <li class="nav-item quiz" id="btn-quiz-restart">再開方法マスター</li>
+                <li class="nav-item quiz" id="btn-quiz-video">動画ケーススタディ</li>
+            </ul>
+        </nav>
 
-            <section id="quiz" class="content-section">
-                <h2>❓ ルールクイズ</h2>
-                <div class="placeholder-card">
-                    <p>全21条対応のクイズ機能を準備中です。</p>
+        <main class="content-area">
+            <header class="content-header">
+                <div class="header-left">
+                    <h2 id="view-title">15人制 競技規則</h2>
+                    <p id="view-desc">レフェリングの基盤となる基本条項を学びます。</p>
                 </div>
-            </section>
+                <div class="header-right" id="law-filter-area">
+                    <select id="law-selector" class="custom-select">
+                        <option value="1">第1条: 試合場</option>
+                        <option value="5">第5条: 試合時間</option>
+                        <option value="6">第6条: マッチオフィシャル</option>
+                        <option value="9">第9条: 不正なプレー</option>
+                        <option value="10">第10条: オフサイド</option>
+                        <option value="18">第18条: ラインアウト</option>
+                    </select>
+                </div>
+            </header>
 
-            <section id="stats" class="content-section">
-                <h2>📊 学習記録</h2>
-                <div class="placeholder-card">
-                    <p>正答率や称号の管理機能を準備中です。</p>
+            <div id="main-display" class="display-grid">
                 </div>
-            </section>
         </main>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
