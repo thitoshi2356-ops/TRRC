@@ -1,35 +1,30 @@
-// TRRC: サーバーレスAPI - ルール参照用
-const { Pool } = require('pg');
-const connectionString = process.env.DATABASE_URL;
+import { Pool } from 'pg';
 
 const pool = new Pool({
-    connectionString: connectionString,
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
-module.exports = async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*'); 
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+export default async function handler(req, res) {
+  // CORS設定
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
 
-    if (req.method === 'OPTIONS') {
-        res.writeHead(200);
-        res.end();
-        return;
-    }
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
 
-    try {
-        const client = await pool.connect();
-        // データベースからすべてのルールを取得するSQL
-        const result = await client.query('SELECT law_number, section_title, content_jp FROM rules ORDER BY law_number, id;');
-        client.release();
+  try {
+    const client = await pool.connect();
+    // rulesテーブルからデータを取得
+    const result = await client.query('SELECT * FROM rules ORDER BY law_number ASC, id ASC');
+    client.release();
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(result.rows)); // JSON形式でデータを返す
-
-    } catch (error) {
-        console.error('データベースクエリ実行エラー:', error);
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: 'データの取得に失敗しました。' }));
-    }
-};
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error('Database error:', err);
+    res.status(500).json({ error: 'Failed to fetch rules', details: err.message });
+  }
+}
