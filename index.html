@@ -52,7 +52,30 @@
                     <div class="placeholder-card"><p>保存された議論やルールはありません</p></div>
                 </div>
             </section>
-        </main>
+
+            <div id="upload-modal" class="modal-overlay">
+                <div class="modal-card">
+                    <h3>📹 動画を投稿</h3>
+                    <input type="text" id="upload-title" placeholder="タイトル（例：故意のノックオン？）" class="modal-input">
+                    
+                    <div class="file-drop-area" id="drop-area">
+                        <p>ここに動画ファイルをドロップ<br>または</p>
+                        <input type="file" id="video-file" accept="video/*" hidden>
+                        <button class="filter-btn" onclick="document.getElementById('video-file').click()">ファイルを選択</button>
+                        <p id="file-name" style="font-size:0.8em; color:#666; margin-top:10px;"></p>
+                    </div>
+                    
+                    <div class="progress-container" id="progress-container" style="display:none;">
+                        <div class="progress-bar" id="upload-progress"></div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button class="action-btn" id="btn-cancel-upload">キャンセル</button>
+                        <button class="main-action-btn" id="btn-submit-upload" style="width:auto; margin:0;">投稿する</button>
+                    </div>
+                </div>
+            </div>
+            </main>
     </div>
     <script src="app.js"></script>
 </body>
