@@ -6,121 +6,195 @@
     <title>TRRC - Rugby Referee Study App</title>
     <style>
         :root {
-            --primary: #1a365d;
-            --accent: #e53e3e;
-            --bg: #f7fafc;
+            --primary: #1a365d; /* 紺色 */
+            --accent: #e53e3e;  /* 赤色 */
+            --bg: #f4f7fa;      /* 背景色 */
             --white: #ffffff;
+            --text: #2d3748;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             margin: 0;
             background-color: var(--bg);
-            color: #333;
-            padding-bottom: 70px; /* ナビ用 */
+            color: var(--text);
+            padding-bottom: 80px; /* 下部ナビゲーションの分空ける */
         }
 
-        /* ヘッダー */
+        /* --- ヘッダー --- */
         header {
             background-color: var(--primary);
             color: var(--white);
-            padding: 1rem;
+            padding: 15px;
             text-align: center;
             position: sticky;
             top: 0;
-            z-index: 100;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
+        header h1 { margin: 0; font-size: 1.2rem; }
 
-        /* 検索とフィルターエリア */
-        .search-container {
+        /* --- メインコンテンツエリア --- */
+        .content-section {
+            display: none; /* デフォルトは非表示 */
+            max-width: 600px;
+            margin: 0 auto;
             padding: 15px;
-            background: var(--white);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .content-section.active {
+            display: block; /* アクティブなタブだけ表示 */
+            animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        /* --- 検索とフィルター (Lawボタン) --- */
+        .search-area {
+            position: sticky;
+            top: 54px; /* ヘッダーの下 */
+            background: var(--bg);
+            padding: 10px 0;
+            z-index: 900;
         }
 
         #rule-search {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ddd;
+            border: 1px solid #cbd5e0;
             border-radius: 8px;
-            box-sizing: border-box;
             font-size: 16px;
+            box-sizing: border-box; /* 枠線を含めてサイズ計算 */
+            margin-bottom: 10px;
         }
 
-        /* Lawフィルターボタンのスクロールエリア */
+        /* 横スクロールするLawボタン */
         .filter-scroll-container {
             display: flex;
             overflow-x: auto;
-            padding: 10px 0;
             gap: 8px;
-            white-space: nowrap;
+            padding-bottom: 5px;
+            -webkit-overflow-scrolling: touch; /* スマホで滑らかに */
+            scrollbar-width: none; /* Firefoxスクロールバー隠し */
         }
+        .filter-scroll-container::-webkit-scrollbar { display: none; } /* Chromeスクロールバー隠し */
 
         .filter-chip {
-            padding: 8px 16px;
-            background: #edf2f7;
+            white-space: nowrap;
+            padding: 6px 14px;
+            background: #e2e8f0;
             border: none;
             border-radius: 20px;
-            cursor: pointer;
-            font-weight: bold;
+            font-size: 0.9rem;
             color: #4a5568;
+            cursor: pointer;
+            transition: all 0.2s;
         }
-
         .filter-chip.active {
             background: var(--primary);
-            color: white;
+            color: var(--white);
+            font-weight: bold;
         }
 
-        /* メインコンテンツ */
-        .content-section {
-            display: none;
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 15px;
-        }
-
-        .content-section.active {
-            display: block;
-        }
-
-        /* カードデザイン */
-        .rule-card, .post-card {
+        /* --- カードデザイン (ルール & 投稿) --- */
+        .card {
             background: var(--white);
-            border-radius: 12px;
+            border-radius: 10px;
             padding: 15px;
             margin-bottom: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
 
         .rule-header {
             display: flex;
             justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        .law-badge {
+            background: #bee3f8;
+            color: #2b6cb0;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        /* ペナルティバッジ装飾 */
+        .pb { padding: 2px 5px; border-radius: 4px; font-weight: bold; font-size: 0.9em; margin: 0 2px; }
+        .pb-PK { background: #fed7d7; color: #c53030; }
+        .pb-FK { background: #feebc8; color: #9c4221; }
+        .pb-scrum { background: #e2e8f0; color: #2d3748; }
+
+        /* --- 議論・動画投稿エリア --- */
+        .upload-btn-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .btn-upload {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-weight: bold;
+            font-size: 1rem;
+            box-shadow: 0 4px 6px rgba(229, 62, 62, 0.3);
+            cursor: pointer;
+            display: inline-flex;
             align-items: center;
+            gap: 8px;
+        }
+        .btn-upload:active { transform: scale(0.98); }
+
+        .video-placeholder {
+            background: #000;
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
             margin-bottom: 10px;
         }
 
-        .rule-law-badge {
-            background: #ebf8ff;
-            color: #2b6cb0;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.8em;
-            font-weight: bold;
+        /* 投票バー */
+        .poll-row {
+            display: flex;
+            align-items: center;
+            margin: 6px 0;
+            font-size: 0.85rem;
         }
+        .poll-label { width: 80px; font-weight: bold; }
+        .poll-track { flex: 1; height: 8px; background: #edf2f7; border-radius: 4px; overflow: hidden; margin: 0 10px; }
+        .poll-fill { height: 100%; background: var(--primary); }
 
-        .penalty-badge {
-            display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-weight: bold;
-            font-size: 0.85em;
-            margin-right: 4px;
+        /* --- モーダル (ポップアップ) --- */
+        .modal-overlay {
+            display: none; /* JSでflexに変更 */
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
         }
-        .pb-PK { background: #fed7d7; color: #c53030; }
-        .pb-FK { background: #feebc8; color: #9c4221; }
-        .pb-スクラム { background: #e2e8f0; color: #2d3748; }
+        .modal-overlay.open { display: flex; }
+        
+        .modal-box {
+            background: white;
+            padding: 20px;
+            width: 85%;
+            max-width: 400px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; }
+        
+        .btn-submit { background: var(--primary); color: white; width: 100%; padding: 10px; border: none; border-radius: 6px; font-size: 1rem; cursor: pointer; }
+        .btn-cancel { background: transparent; color: #718096; width: 100%; padding: 10px; border: none; margin-top: 5px; cursor: pointer; }
 
-        /* 下部ナビゲーション */
+        /* --- 下部ナビゲーション --- */
         nav {
             position: fixed;
             bottom: 0;
@@ -129,158 +203,90 @@
             display: flex;
             justify-content: space-around;
             padding: 10px 0;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
-            z-index: 100;
+            border-top: 1px solid #e2e8f0;
+            z-index: 1000;
         }
-
-        .tab-btn {
-            background: none;
+        .nav-item {
             border: none;
-            color: #718096;
-            font-size: 0.9em;
-            cursor: pointer;
+            background: none;
+            color: #a0aec0;
+            font-size: 0.75rem;
             display: flex;
             flex-direction: column;
             align-items: center;
-        }
-
-        .tab-btn.active {
-            color: var(--primary);
-            font-weight: bold;
-        }
-
-        /* 投稿エリア */
-        .post-video {
-            background: #000;
-            color: #fff;
-            aspect-ratio: 16/9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            margin-bottom: 10px;
-        }
-
-        .poll-bar-bg {
-            background: #edf2f7;
-            height: 12px;
-            border-radius: 6px;
-            flex-grow: 1;
-            margin: 0 10px;
-            overflow: hidden;
-        }
-
-        .poll-bar-fill {
-            background: var(--primary);
-            height: 100%;
-            transition: width 0.5s ease;
-        }
-
-        .poll-option {
-            display: flex;
-            align-items: center;
-            margin: 8px 0;
-        }
-
-        /* モーダル */
-        #upload-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #upload-modal.active { display: flex; }
-
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 8px;
-            width: 100%;
-            margin-top: 10px;
             cursor: pointer;
         }
+        .nav-item span { font-size: 1.4rem; margin-bottom: 2px; }
+        .nav-item.active { color: var(--primary); font-weight: bold; }
 
-        #progress-container {
-            display: none;
-            margin-top: 15px;
-            background: #eee;
-            border-radius: 10px;
-        }
-
-        #upload-progress {
-            height: 10px;
-            background: #48bb78;
-            width: 0%;
-            border-radius: 10px;
-        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>TRRC</h1>
+        <h1>TRRC Referee App</h1>
     </header>
 
-    <div id="rules" class="content-section active">
-        <div class="search-container">
-            <input type="text" id="rule-search" placeholder="キーワードでルールを検索...">
-            <div id="law-filters" class="filter-scroll-container">
+    <div id="tab-rules" class="content-section active">
+        <div class="search-area">
+            <input type="text" id="rule-search" placeholder="🔍 キーワード検索 (例: スクラム)...">
+            <div id="law-filter-container" class="filter-scroll-container">
                 </div>
         </div>
-        <div id="rule-display">
-            </div>
+        <div id="rules-list">
+            <p style="text-align:center; margin-top:20px;">ルールを読み込んでいます...</p>
+        </div>
     </div>
 
-    <div id="discussion" class="content-section">
-        <div style="padding: 10px;">
-            <button id="btn-open-upload" class="btn-primary">+ 新しい議論を投稿する</button>
+    <div id="tab-discussion" class="content-section">
+        <div class="upload-btn-container">
+            <button id="btn-open-upload" class="btn-upload">
+                <span>📹</span> 動画ケースを投稿する
+            </button>
         </div>
         <div id="discussion-feed">
-            </div>
-    </div>
-
-    <div id="stats" class="content-section">
-        <h2>マイブックマーク</h2>
-        <div id="bookmark-list">
-            <p>保存した議論がここに表示されます（開発中）</p>
+            <p style="text-align:center;">読み込み中...</p>
         </div>
     </div>
 
-    <div id="upload-modal">
-        <div class="modal-content">
-            <h3>動画ケースを投稿</h3>
-            <label>タイトル</label>
-            <input type="text" id="upload-title" style="width:100%; margin:10px 0; padding:8px;" placeholder="例：スクラムの崩壊について">
-            <label>動画ファイル</label>
-            <input type="file" id="video-file" accept="video/*" style="margin:10px 0;">
+    <div id="tab-bookmarks" class="content-section">
+        <h2>保存した議論</h2>
+        <div id="bookmark-list">
+            <p>まだ保存された項目はありません。</p>
+        </div>
+    </div>
+
+    <div id="upload-modal" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-top:0;">新規投稿</h3>
+            <div class="form-group">
+                <label>タイトル・事象</label>
+                <input type="text" id="upload-title" placeholder="例：タックル成立後のプレー">
+            </div>
+            <div class="form-group">
+                <label>動画ファイル</label>
+                <input type="file" id="upload-file" accept="video/*">
+            </div>
             
-            <div id="progress-container">
-                <div id="upload-progress"></div>
+            <div id="progress-wrapper" style="display:none; background:#eee; height:6px; border-radius:3px; margin-bottom:10px;">
+                <div id="upload-progress-bar" style="width:0%; height:100%; background:var(--primary); border-radius:3px;"></div>
             </div>
 
-            <button id="btn-submit-upload" class="btn-primary">投稿する</button>
-            <button id="btn-cancel-upload" style="background:none; border:none; width:100%; margin-top:10px; color:#888;">キャンセル</button>
+            <button id="btn-submit" class="btn-submit">投稿する</button>
+            <button id="btn-cancel" class="btn-cancel">キャンセル</button>
         </div>
     </div>
 
     <nav>
-        <button class="tab-btn active" data-tab="rules"><span>📖</span>ルール</button>
-        <button class="tab-btn" data-tab="discussion"><span>🎥</span>議論</button>
-        <button class="tab-btn" data-tab="stats"><span>⭐</span>保存</button>
+        <button class="nav-item active" data-target="tab-rules">
+            <span>📖</span>ルール
+        </button>
+        <button class="nav-item" data-target="tab-discussion">
+            <span>💬</span>議論
+        </button>
+        <button class="nav-item" data-target="tab-bookmarks">
+            <span>⭐</span>保存
+        </button>
     </nav>
 
     <script src="app.js"></script>
