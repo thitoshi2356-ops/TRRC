@@ -3,10 +3,12 @@
   "version": "1.0.0",
   "description": "TRRC Rugby Referee Study App",
   "main": "app.js",
+  "type": "module",
   "scripts": {
     "start": "node app.js"
   },
   "dependencies": {
-    "pg": "^8.11.3" 
+    "pg": "^8.11.3",
+    "formidable": "^3.5.1"
   }
 }
