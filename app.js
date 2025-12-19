@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
             { id: 'u19', name: '19歳未満' }
         ];
 
-        // すべてボタン
+        // すべて表示ボタン
         const topRow = document.createElement('div');
         topRow.className = 'filter-chips';
         topRow.innerHTML = `<button class="filter-btn active" data-type="all">すべて表示</button>`;
@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = document.createElement('button');
             btn.className = 'filter-btn';
             btn.dataset.type = 'special';
-            btn.dataset.id = item.id;
+            btn.dataset.id = item.id; // ここを id に統一
             btn.textContent = item.name;
             sRow.appendChild(btn);
         });
@@ -67,14 +67,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn = document.createElement('button');
             btn.className = 'filter-btn';
             btn.dataset.type = 'law';
-            btn.dataset.id = i;
+            btn.dataset.id = i; // ここを id に統一
             btn.textContent = `Law ${i}`;
             lRow.appendChild(btn);
         }
         filterContainer.appendChild(lRow);
     }
 
-    // --- 3. 表示名と罰則装飾の定義 ---
+    // --- 3. 表示名・罰則装飾の定義 ---
     function getDisplayName(rule) {
         if (rule.type === 'special') {
             const names = { 
@@ -94,19 +94,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function decoratePenalty(text) {
-        // 罰則キーワードをバッジ化
         return text
             .replace(/(ペナルティキック|PK)/g, '<span class="penalty-badge pb-pk">$1</span>')
             .replace(/(フリーキック|FK)/g, '<span class="penalty-badge pb-fk">$1</span>')
             .replace(/(スクラム)/g, '<span class="penalty-badge pb-scrum">$1</span>');
     }
 
-    // --- 4. データの読み込み (キャッシュ対応) ---
+    // --- 4. データの読み込み ---
     async function loadRules() {
         const display = document.getElementById('rule-display');
-        display.innerHTML = '<p style="text-align:center; padding:20px;">⏳ 同期中...</p>';
+        display.innerHTML = '<p style="text-align:center; padding:20px;">⏳ データを同期中...</p>';
 
-        const cached = localStorage.getItem('trrc_data_2025');
+        const cached = localStorage.getItem('trrc_data_2025_v3');
         if (cached) {
             allRules = JSON.parse(cached);
             renderRules(allRules);
@@ -117,18 +116,18 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/get-rules');
             if (!response.ok) throw new Error('通信エラー');
             allRules = await response.json();
-            localStorage.setItem('trrc_data_2025', JSON.stringify(allRules));
+            localStorage.setItem('trrc_data_2025_v3', JSON.stringify(allRules));
             renderRules(allRules);
         } catch (error) {
-            display.innerHTML = `<div class="rule-card" style="color:red;">⚠️ データ取得失敗</div>`;
+            display.innerHTML = `<div class="rule-card" style="color:red;">⚠️ データ取得に失敗しました</div>`;
         }
     }
 
-    // --- 5. 描画 (ハイライト・罰則装飾) ---
+    // --- 5. 描画処理 ---
     function renderRules(rules, searchTerms = []) {
         const display = document.getElementById('rule-display');
         if (rules.length === 0) {
-            display.innerHTML = '<p style="text-align:center; padding:20px;">見つかりませんでした</p>';
+            display.innerHTML = '<p style="text-align:center; padding:20px;">該当するルールはありません</p>';
             return;
         }
 
@@ -136,7 +135,6 @@ document.addEventListener('DOMContentLoaded', () => {
             let title = rule.section_title;
             let content = decoratePenalty(rule.content_jp);
 
-            // 検索キーワードのハイライト (罰則バッジの中身を壊さないよう注意が必要だが簡易実装)
             if (searchTerms.length > 0) {
                 searchTerms.forEach(term => {
                     if (!term) return;
@@ -159,35 +157,48 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    // --- 6. フィルタ・検索ロジック ---
+    // --- 6. フィルタ・検索の実行 ---
     function filterAndSearch() {
         const query = document.getElementById('rule-search').value.toLowerCase().trim();
         const activeBtn = document.querySelector('.filter-btn.active');
         const searchTerms = query ? query.split(/\s+/) : [];
 
         const filtered = allRules.filter(r => {
+            // フィルタチェック
             let matchesFilter = true;
             if (activeBtn && activeBtn.dataset.type !== 'all') {
-                matchesFilter = (r.type === activeBtn.dataset.type && r.law_number == activeBtn.dataset.id);
+                const targetType = activeBtn.dataset.type;
+                const targetId = activeBtn.dataset.id;
+                // ruleの構造に合わせて比較 (type と id/law_number が一致するか)
+                matchesFilter = (r.type === targetType && r.law_number == targetId);
             }
+
+            // 検索チェック
             const matchesSearch = searchTerms.every(term => 
-                r.content_jp.toLowerCase().includes(term) || r.section_title.toLowerCase().includes(term)
+                r.content_jp.toLowerCase().includes(term) || 
+                r.section_title.toLowerCase().includes(term)
             );
+
             return matchesFilter && matchesSearch;
         });
 
         renderRules(filtered, searchTerms);
     }
 
-    // イベントリスナー
+    // イベントリスナー設定
     document.getElementById('rule-search').addEventListener('input', filterAndSearch);
+
     filterContainer.addEventListener('click', (e) => {
-        if (!e.target.classList.contains('filter-btn')) return;
+        const btn = e.target.closest('.filter-btn');
+        if (!btn) return;
+
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        e.target.classList.add('active');
+        btn.classList.add('active');
+
         filterAndSearch();
     });
 
+    // 初期化
     createFilterUI();
     loadRules();
 });
