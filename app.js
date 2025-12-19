@@ -5,9 +5,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const loginOverlay = document.getElementById('login-overlay');
     const loginBtn = document.getElementById('login-btn');
 
+    // ログインボタンをクリックした時の処理
     if (loginBtn && loginOverlay) {
         loginBtn.addEventListener('click', () => {
-            // ログイン画面を非表示にする
+            console.log("Login button clicked"); // デバッグ用
             loginOverlay.style.display = 'none';
         });
     }
@@ -48,14 +49,21 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             // Vercel の API エンドポイントを呼び出す
             const response = await fetch('/api/get-rules');
+            
+            // レスポンスがJSONでない場合（404エラーなど）の対策
+            const contentType = response.headers.get("content-type");
+            if (!contentType || !contentType.includes("application/json")) {
+                throw new Error("サーバーから正しいデータが返ってきませんでした（APIが見つかりません）");
+            }
+
             const rules = await response.json();
 
             if (!response.ok) {
-                // サーバーからエラーが返ってきた場合
-                throw new Error(rules.detail || 'サーバーエラーが発生しました');
+                // サーバーからエラーが返ってきた場合（500エラーなど）
+                throw new Error(rules.detail || 'サーバー内部でエラーが発生しました');
             }
 
-            if (rules.length === 0) {
+            if (!Array.isArray(rules) || rules.length === 0) {
                 ruleDisplay.innerHTML = '<p>登録されているルールがありません。</p>';
                 return;
             }
@@ -83,12 +91,12 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('Fetch error:', error);
             // 詳細なエラー理由を画面に表示する
             ruleDisplay.innerHTML = `
-                <div class="error-message" style="background: #fff0f0; padding: 15px; border-radius: 8px; border: 1px solid #ffcccc;">
-                    <p style="color: #d00; font-weight: bold;">エラー: データが取得できませんでした。</p>
-                    <p style="font-size: 0.85em; color: #333; margin-top: 10px; background: #eee; padding: 5px;">
+                <div class="error-message" style="background: #fff0f0; padding: 15px; border-radius: 8px; border: 1px solid #ffcccc; color: #333;">
+                    <p style="color: #d00; font-weight: bold;">⚠️ エラーが発生しました</p>
+                    <p style="font-size: 0.85em; margin-top: 10px; background: #eee; padding: 10px; border-radius: 4px; font-family: monospace;">
                         理由: ${error.message}
                     </p>
-                    <button onclick="location.reload()" style="margin-top:10px; padding:8px 15px; background: #333; color: white; border: none; border-radius: 4px;">再読み込み</button>
+                    <button onclick="location.reload()" style="margin-top:10px; padding:8px 15px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">再読み込み</button>
                 </div>
             `;
         }
