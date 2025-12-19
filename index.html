@@ -3,80 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRRC - Rugby Referee Companion 2025</title>
-    <link rel="stylesheet" href="style.css">
+    <title>TRRC - Rugby Referee Study App</title>
+    <style>
+        :root {
+            --primary: #1a365d;
+            --accent: #e53e3e;
+            --bg: #f7fafc;
+            --white: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            background-color: var(--bg);
+            color: #333;
+            padding-bottom: 70px; /* ナビ用 */
+        }
+
+        /* ヘッダー */
+        header {
+            background-color: var(--primary);
+            color: var(--white);
+            padding: 1rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        /* 検索とフィルターエリア */
+        .search-container {
+            padding: 15px;
+            background: var(--white);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        #rule-search {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        /* Lawフィルターボタンのスクロールエリア */
+        .filter-scroll-container {
+            display: flex;
+            overflow-x: auto;
+            padding: 10px 0;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .filter-chip {
+            padding: 8px 16px;
+            background: #edf2f7;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #4a5568;
+        }
+
+        .filter-chip.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* メインコンテンツ */
+        .content-section {
+            display: none;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 15px;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        /* カードデザイン */
+        .rule-card, .post-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .rule-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .rule-law-badge {
+            background: #ebf8ff;
+            color: #2b6cb0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .penalty-badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.85em;
+            margin-right: 4px;
+        }
+        .pb-PK { background: #fed7d7; color: #c53030; }
+        .pb-FK { background: #feebc8; color: #9c4221; }
+        .pb-スクラム { background: #e2e8f0; color: #2d3748; }
+
+        /* 下部ナビゲーション */
+        nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            background: var(--white);
+            display: flex;
+            justify-content: space-around;
+            padding: 10px 0;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #718096;
+            font-size: 0.9em;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+            font-weight: bold;
+        }
+
+        /* 投稿エリア */
+        .post-video {
+            background: #000;
+            color: #fff;
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .poll-bar-bg {
+            background: #edf2f7;
+            height: 12px;
+            border-radius: 6px;
+            flex-grow: 1;
+            margin: 0 10px;
+            overflow: hidden;
+        }
+
+        .poll-bar-fill {
+            background: var(--primary);
+            height: 100%;
+            transition: width 0.5s ease;
+        }
+
+        .poll-option {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+        }
+
+        /* モーダル */
+        #upload-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #upload-modal.active { display: flex; }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            width: 100%;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        #progress-container {
+            display: none;
+            margin-top: 15px;
+            background: #eee;
+            border-radius: 10px;
+        }
+
+        #upload-progress {
+            height: 10px;
+            background: #48bb78;
+            width: 0%;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <header>
-            <div class="header-content">
-                <h1>TRRC 2025</h1>
-                <p class="subtitle">Rugby Referee Companion</p>
+
+    <header>
+        <h1>TRRC</h1>
+    </header>
+
+    <div id="rules" class="content-section active">
+        <div class="search-container">
+            <input type="text" id="rule-search" placeholder="キーワードでルールを検索...">
+            <div id="law-filters" class="filter-scroll-container">
+                </div>
+        </div>
+        <div id="rule-display">
             </div>
-            <nav>
-                <div class="tab-container">
-                    <button class="tab-btn active" data-tab="rules">📖 ルール</button>
-                    <button class="tab-btn" data-tab="discussion">🗣️ 議論</button>
-                    <button class="tab-btn" data-tab="quiz">❓ クイズ</button>
-                    <button class="tab-btn" data-tab="stats">📊 記録</button>
-                </div>
-            </nav>
-        </header>
-
-        <main>
-            <section id="rules" class="content-section active">
-                <div class="search-area">
-                    <input type="text" id="rule-search" placeholder="キーワード検索（例：スクラム 故意）">
-                    <div class="filter-container">
-                        <div id="law-filters"></div>
-                    </div>
-                </div>
-                <div id="rule-display"></div>
-            </section>
-
-            <section id="discussion" class="content-section">
-                <div class="upload-box">
-                    <button id="btn-open-upload" class="main-action-btn">＋ 議論したい動画を投稿する</button>
-                </div>
-                <div id="discussion-feed">
-                    </div>
-            </section>
-
-            <section id="quiz" class="content-section">
-                <div class="placeholder-card"><p>全21条対応クイズ機能を準備中...</p></div>
-            </section>
-
-            <section id="stats" class="content-section">
-                <h3>📊 マイブックマーク</h3>
-                <div id="bookmark-list">
-                    <div class="placeholder-card"><p>保存された議論やルールはありません</p></div>
-                </div>
-            </section>
-
-            <div id="upload-modal" class="modal-overlay">
-                <div class="modal-card">
-                    <h3>📹 動画を投稿</h3>
-                    <input type="text" id="upload-title" placeholder="タイトル（例：故意のノックオン？）" class="modal-input">
-                    
-                    <div class="file-drop-area" id="drop-area">
-                        <p>ここに動画ファイルをドロップ<br>または</p>
-                        <input type="file" id="video-file" accept="video/*" hidden>
-                        <button class="filter-btn" onclick="document.getElementById('video-file').click()">ファイルを選択</button>
-                        <p id="file-name" style="font-size:0.8em; color:#666; margin-top:10px;"></p>
-                    </div>
-                    
-                    <div class="progress-container" id="progress-container" style="display:none;">
-                        <div class="progress-bar" id="upload-progress"></div>
-                    </div>
-
-                    <div class="modal-actions">
-                        <button class="action-btn" id="btn-cancel-upload">キャンセル</button>
-                        <button class="main-action-btn" id="btn-submit-upload" style="width:auto; margin:0;">投稿する</button>
-                    </div>
-                </div>
-            </div>
-            </main>
     </div>
+
+    <div id="discussion" class="content-section">
+        <div style="padding: 10px;">
+            <button id="btn-open-upload" class="btn-primary">+ 新しい議論を投稿する</button>
+        </div>
+        <div id="discussion-feed">
+            </div>
+    </div>
+
+    <div id="stats" class="content-section">
+        <h2>マイブックマーク</h2>
+        <div id="bookmark-list">
+            <p>保存した議論がここに表示されます（開発中）</p>
+        </div>
+    </div>
+
+    <div id="upload-modal">
+        <div class="modal-content">
+            <h3>動画ケースを投稿</h3>
+            <label>タイトル</label>
+            <input type="text" id="upload-title" style="width:100%; margin:10px 0; padding:8px;" placeholder="例：スクラムの崩壊について">
+            <label>動画ファイル</label>
+            <input type="file" id="video-file" accept="video/*" style="margin:10px 0;">
+            
+            <div id="progress-container">
+                <div id="upload-progress"></div>
+            </div>
+
+            <button id="btn-submit-upload" class="btn-primary">投稿する</button>
+            <button id="btn-cancel-upload" style="background:none; border:none; width:100%; margin-top:10px; color:#888;">キャンセル</button>
+        </div>
+    </div>
+
+    <nav>
+        <button class="tab-btn active" data-tab="rules"><span>📖</span>ルール</button>
+        <button class="tab-btn" data-tab="discussion"><span>🎥</span>議論</button>
+        <button class="tab-btn" data-tab="stats"><span>⭐</span>保存</button>
+    </nav>
+
     <script src="app.js"></script>
 </body>
 </html>
