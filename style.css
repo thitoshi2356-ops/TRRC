@@ -1,24 +1,27 @@
 :root {
-    --primary-color: #1b4d3e;
-    --accent-color: #e44134;
+    --primary-color: #1b4d3e; /* ラグビーグリーン */
+    --accent-color: #e44134;  /* 警告カードの赤 */
     --bg-color: #f4f7f6;
     --card-bg: #ffffff;
     --text-color: #333333;
-    /* 罰則用カラー */
-    --pk-color: #d32f2f; /* ペナルティ: 赤 */
-    --fk-color: #f57c00; /* フリーキック: オレンジ */
+    
+    /* 罰則（ペナルティ）用カラー */
+    --pk-color: #d32f2f;    /* ペナルティキック: 赤 */
+    --fk-color: #f57c00;    /* フリーキック: オレンジ */
     --scrum-color: #1976d2; /* スクラム: 青 */
 }
 
 body {
-    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', sans-serif;
+    font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', sans-serif;
     margin: 0;
     padding: 0;
     background-color: var(--bg-color);
     color: var(--text-color);
+    line-height: 1.6;
     -webkit-tap-highlight-color: transparent;
 }
 
+/* ヘッダー・ナビゲーション */
 header {
     background-color: var(--primary-color);
     color: white;
@@ -56,13 +59,16 @@ header {
     font-size: 0.85em;
     cursor: pointer;
     border-bottom: 3px solid transparent;
+    transition: 0.3s;
 }
 
 .tab-btn.active {
     border-bottom: 3px solid white;
     font-weight: bold;
+    background: rgba(255,255,255,0.1);
 }
 
+/* メインコンテンツエリア */
 main {
     padding: 15px;
     max-width: 600px;
@@ -77,7 +83,7 @@ main {
     display: block;
 }
 
-/* 検索・フィルタ */
+/* 検索エリア */
 .search-area {
     margin-bottom: 20px;
 }
@@ -91,8 +97,14 @@ main {
     font-size: 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     margin-bottom: 15px;
+    outline: none;
 }
 
+#rule-search:focus {
+    border-color: var(--primary-color);
+}
+
+/* フィルタコンテナ */
 .filter-container {
     background: #fff;
     padding: 12px;
@@ -105,6 +117,8 @@ main {
     font-weight: bold;
     margin: 12px 0 8px 5px;
     color: var(--primary-color);
+    border-left: 3px solid var(--primary-color);
+    padding-left: 8px;
 }
 
 .filter-group-title:first-child {
@@ -114,13 +128,13 @@ main {
 .filter-chips {
     display: flex;
     gap: 8px;
-    overflow-x: auto;
+    overflow-x: auto; /* 横スクロールを有効化 */
     padding-bottom: 8px;
-    scrollbar-width: none;
+    scrollbar-width: none; /* Firefox用 */
 }
 
 .filter-chips::-webkit-scrollbar {
-    display: none;
+    display: none; /* Chrome/Safari用 */
 }
 
 .filter-btn {
@@ -162,9 +176,10 @@ main {
     background: var(--accent-color);
     color: white;
     font-size: 0.7em;
-    padding: 3px 10px;
+    padding: 3px 12px;
     border-radius: 15px;
     font-weight: bold;
+    white-space: nowrap;
 }
 
 .rule-category {
@@ -187,15 +202,16 @@ main {
     color: #444;
 }
 
-/* ハイライト & 罰則表示 */
+/* 検索ハイライト */
 mark {
-    background-color: #ffeb3b;
+    background-color: #ffeb3b; /* 鮮やかな黄色 */
     color: #000;
     padding: 0 2px;
     border-radius: 2px;
     font-weight: bold;
 }
 
+/* 罰則（ペナルティ）バッジ */
 .penalty-badge {
     display: inline-block;
     padding: 2px 8px;
@@ -210,6 +226,7 @@ mark {
 .pb-fk { background-color: var(--fk-color); }
 .pb-scrum { background-color: var(--scrum-color); }
 
+/* プレースホルダー */
 .placeholder-card {
     background: white;
     padding: 50px 20px;
