@@ -1,4 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // ==========================================
+    // 0. 定数定義 (Law番号の表示名変換)
+    // ==========================================
+    const LAW_LABELS = {
+        100: "ラグビー憲章",
+        200: "定義",
+        700: "7人制",
+        1000: "10人制",
+        1900: "19歳未満"
+    };
+
     // --- データ管理変数 ---
     let allRules = [];
     let currentLawFilter = 'all';
@@ -55,7 +66,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         let html = `<button class="filter-chip active" data-law="all">ALL</button>`;
         laws.forEach(num => {
-            html += `<button class="filter-chip" data-law="${num}">Law ${num}</button>`;
+            // 表示名をリストから取得、なければ "Law XX" とする
+            const label = LAW_LABELS[num] ? LAW_LABELS[num] : `Law ${num}`;
+            html += `<button class="filter-chip" data-law="${num}">${label}</button>`;
         });
         container.innerHTML = html;
 
@@ -94,10 +107,14 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        display.innerHTML = filtered.map(r => `
+        display.innerHTML = filtered.map(r => {
+            // カード上のバッジ表示名も変換する
+            const badgeLabel = LAW_LABELS[r.law_number] ? LAW_LABELS[r.law_number] : `LAW ${r.law_number}`;
+
+            return `
             <div class="card">
                 <div class="rule-header">
-                    <span class="law-badge">LAW ${r.law_number}</span>
+                    <span class="law-badge">${badgeLabel}</span>
                 </div>
                 <h3 style="margin:5px 0 10px;">${r.section_title}</h3>
                 <p style="line-height:1.6; color:#4a5568;">
@@ -107,7 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         .replace(/スクラム/g, '<span class="pb pb-scrum">スクラム</span>')}
                 </p>
             </div>
-        `).join('');
+            `;
+        }).join('');
     }
 
     // 検索窓に入力した時のイベント
