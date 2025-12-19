@@ -1,35 +1,44 @@
-// TRRC: サーバーレスAPI - ルール参照用
 const { Pool } = require('pg');
-const connectionString = process.env.DATABASE_URL;
 
+// 接続設定（タイムアウトを長めに設定し、接続を安定させます）
 const pool = new Pool({
-    connectionString: connectionString,
+  connectionString: process.env.DATABASE_URL,
+  connectionTimeoutMillis: 5000, // 5秒待つ
+  idleTimeoutMillis: 30000,
+  max: 10,
+  ssl: {
+    rejectUnauthorized: false // SSL接続をより柔軟に許可
+  }
 });
 
 module.exports = async (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*'); 
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
 
-    if (req.method === 'OPTIONS') {
-        res.writeHead(200);
-        res.end();
-        return;
-    }
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
 
-    try {
-        const client = await pool.connect();
-        // データベースからすべてのルールを取得するSQL
-        const result = await client.query('SELECT law_number, section_title, content_jp FROM rules ORDER BY law_number, id;');
-        client.release();
+  let client;
+  try {
+    // 1. 接続を試みる
+    client = await pool.connect();
+    
+    // 2. クエリ実行
+    const result = await client.query('SELECT law_number, section_title, content_jp FROM rules ORDER BY law_number, id;');
+    
+    // 3. 成功したらデータを返す
+    res.status(200).json(result.rows);
 
-        res.statusCode = 200;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(result.rows)); // JSON形式でデータを返す
-
-    } catch (error) {
-        console.error('データベースクエリ実行エラー:', error);
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify({ error: 'データの取得に失敗しました。' }));
-    }
+  } catch (error) {
+    // 4. 失敗した場合、エラーの詳細をフロントエンドに送る（診断用）
+    console.error('DB Error Detail:', error.message);
+    res.status(500).json({ 
+      error: 'データの取得に失敗しました。',
+      detail: error.message // ← これで具体的な原因が画面に表示されます
+    });
+  } finally {
+    if (client) client.release();
+  }
 };
