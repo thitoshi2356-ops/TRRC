@@ -1,7 +1,18 @@
 // TRRC アプリケーション メインスクリプト
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. タブ切り替え機能
+    // --- 0. ログイン画面の制御 (モック機能) ---
+    const loginOverlay = document.getElementById('login-overlay');
+    const loginBtn = document.getElementById('login-btn');
+
+    if (loginBtn && loginOverlay) {
+        loginBtn.addEventListener('click', () => {
+            // ログイン画面を非表示にする
+            loginOverlay.style.display = 'none';
+        });
+    }
+
+    // --- 1. タブ切り替え機能 ---
     const tabs = document.querySelectorAll('.tab-btn');
     const sections = document.querySelectorAll('.content-section');
 
@@ -27,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // 2. データベースからルールを取得する関数
+    // --- 2. データベースからルールを取得する関数 ---
     async function loadRules() {
         const ruleDisplay = document.getElementById('rule-display');
         
@@ -40,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rules = await response.json();
 
             if (!response.ok) {
-                // サーバーからエラーが返ってきた場合（500エラーなど）
+                // サーバーからエラーが返ってきた場合
                 throw new Error(rules.detail || 'サーバーエラーが発生しました');
             }
 
@@ -70,19 +81,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         } catch (error) {
             console.error('Fetch error:', error);
-            // 詳細なエラー理由を画面に表示する（原因特定のため）
+            // 詳細なエラー理由を画面に表示する
             ruleDisplay.innerHTML = `
-                <div class="error-message">
-                    <p><strong>エラー: データが取得できませんでした。</strong></p>
-                    <p style="font-size: 0.8em; color: #cc0000; margin-top: 10px;">
+                <div class="error-message" style="background: #fff0f0; padding: 15px; border-radius: 8px; border: 1px solid #ffcccc;">
+                    <p style="color: #d00; font-weight: bold;">エラー: データが取得できませんでした。</p>
+                    <p style="font-size: 0.85em; color: #333; margin-top: 10px; background: #eee; padding: 5px;">
                         理由: ${error.message}
                     </p>
-                    <button onclick="location.reload()" style="margin-top:10px; padding:5px 10px;">再試行</button>
+                    <button onclick="location.reload()" style="margin-top:10px; padding:8px 15px; background: #333; color: white; border: none; border-radius: 4px;">再読み込み</button>
                 </div>
             `;
         }
     }
-
-    // 初期状態で「ルール参照」タブの内容を読み込みたい場合は以下を有効にする
-    // loadRules();
 });
