@@ -1,18 +1,29 @@
 // TRRC アプリケーション メインスクリプト
 
 document.addEventListener('DOMContentLoaded', () => {
-    // --- 0. ログイン画面の制御 (確実に動くように強化) ---
-    const loginOverlay = document.getElementById('login-overlay');
-    // ID "login-btn" またはボタンのタグ名から探します
-    const loginBtn = document.getElementById('login-btn') || document.querySelector('button');
+    console.log("App.js loaded successfully");
 
-    if (loginBtn && loginOverlay) {
-        loginBtn.addEventListener('click', (e) => {
-            e.preventDefault(); // 画面リロードを防止
-            loginOverlay.style.display = 'none'; // ログイン画面を消す
-            console.log("Login successful");
-        });
-    }
+    // --- 0. ログイン画面の制御 (極めて強力にボタンを探します) ---
+    const loginOverlay = document.getElementById('login-overlay');
+    
+    // ページ内のすべてのボタンを監視対象にする（IDが違っても動くようにする）
+    const allButtons = document.querySelectorAll('button');
+    
+    allButtons.forEach(btn => {
+        // ボタンに「ログイン」という文字が含まれているか、特定のIDがある場合
+        if (btn.textContent.includes('ログイン') || btn.id === 'login-btn') {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                console.log("Login button clicked!");
+                if (loginOverlay) {
+                    loginOverlay.style.display = 'none';
+                    console.log("Overlay hidden");
+                } else {
+                    console.error("Login overlay (id='login-overlay') not found");
+                }
+            });
+        }
+    });
 
     // --- 1. タブ切り替え機能 ---
     const tabs = document.querySelectorAll('.tab-btn');
@@ -20,11 +31,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            // アクティブなタブの切り替え
             tabs.forEach(t => t.classList.remove('active'));
             tab.classList.add('active');
 
-            // 表示セクションの切り替え
             const target = tab.dataset.tab;
             sections.forEach(section => {
                 section.classList.remove('active');
@@ -33,7 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // 「ルール参照」タブがクリックされた時にデータを読み込む
             if (target === 'rules') {
                 loadRules();
             }
@@ -45,18 +53,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const ruleDisplay = document.getElementById('rule-display');
         if (!ruleDisplay) return;
 
-        // ローディング表示
         ruleDisplay.innerHTML = '<p class="loading">⏳ データベースに接続中...</p>';
 
         try {
-            // Vercel の API エンドポイントを呼び出す
             const response = await fetch('/api/get-rules');
-            
-            // JSONデータとして受け取る
             const result = await response.json();
 
             if (!response.ok) {
-                // API側でエラーが発生した場合（500エラーなど）
                 throw new Error(result.detail || 'サーバーエラーが発生しました');
             }
 
@@ -65,7 +68,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // 取得したデータをHTMLに組み立てる
             let html = '<div class="rules-container">';
             result.forEach(rule => {
                 html += `
@@ -81,22 +83,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
             });
             html += '</div>';
-
             ruleDisplay.innerHTML = html;
 
         } catch (error) {
             console.error('Fetch error:', error);
-            // エラーの詳細を画面に分かりやすく表示
             ruleDisplay.innerHTML = `
                 <div class="error-message" style="background: #fff0f0; padding: 20px; border-radius: 8px; border: 1px solid #ffcccc; color: #333;">
-                    <p style="color: #d00; font-weight: bold; font-size: 1.1em;">⚠️ データの取得に失敗しました</p>
-                    <div style="margin-top: 15px; background: #fdfdfd; padding: 10px; border: 1px dashed #ccc; font-family: monospace; font-size: 0.9em;">
+                    <p style="color: #d00; font-weight: bold;">⚠️ 接続エラーが発生しました</p>
+                    <div style="margin-top: 15px; background: #eee; padding: 10px; border-radius: 4px; font-family: monospace;">
                         <strong>理由:</strong> ${error.message}
                     </div>
-                    <p style="font-size: 0.8em; color: #666; margin-top: 10px;">
-                        ※ DATABASE_URLの設定やNeonの接続状態を確認してください。
-                    </p>
-                    <button onclick="location.reload()" style="margin-top:15px; padding:10px 20px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">再読み込みを試す</button>
+                    <button onclick="location.reload()" style="margin-top:15px; padding:10px; cursor:pointer;">再読み込み</button>
                 </div>
             `;
         }
