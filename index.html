@@ -15,9 +15,10 @@
             </div>
             <nav>
                 <div class="tab-container">
-                    <button class="tab-btn active" data-tab="rules">📖 ルール参照</button>
+                    <button class="tab-btn active" data-tab="rules">📖 ルール</button>
+                    <button class="tab-btn" data-tab="discussion">🗣️ 議論</button>
                     <button class="tab-btn" data-tab="quiz">❓ クイズ</button>
-                    <button class="tab-btn" data-tab="stats">📊 学習記録</button>
+                    <button class="tab-btn" data-tab="stats">📊 記録</button>
                 </div>
             </nav>
         </header>
@@ -26,33 +27,33 @@
             <section id="rules" class="content-section active">
                 <div class="search-area">
                     <input type="text" id="rule-search" placeholder="キーワード検索（例：スクラム 故意）">
-                    
                     <div class="filter-container">
-                        <div id="law-filters">
-                            </div>
+                        <div id="law-filters"></div>
                     </div>
                 </div>
-                
-                <div id="rule-display">
+                <div id="rule-display"></div>
+            </section>
+
+            <section id="discussion" class="content-section">
+                <div class="upload-box">
+                    <button id="btn-open-upload" class="main-action-btn">＋ 議論したい動画を投稿する</button>
+                </div>
+                <div id="discussion-feed">
                     </div>
             </section>
 
             <section id="quiz" class="content-section">
-                <h2>❓ ルールクイズ</h2>
-                <div class="placeholder-card">
-                    <p>全21条対応のクイズ機能を準備中です。</p>
-                </div>
+                <div class="placeholder-card"><p>全21条対応クイズ機能を準備中...</p></div>
             </section>
 
             <section id="stats" class="content-section">
-                <h2>📊 学習記録</h2>
-                <div class="placeholder-card">
-                    <p>正答率や称号の管理機能を準備中です。</p>
+                <h3>📊 マイブックマーク</h3>
+                <div id="bookmark-list">
+                    <div class="placeholder-card"><p>保存された議論やルールはありません</p></div>
                 </div>
             </section>
         </main>
     </div>
-
     <script src="app.js"></script>
 </body>
 </html>
