@@ -3,37 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRRC - Rugby Referee Study App</title>
+    <title>TRRC - Rugby Referee Companion</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
         <header>
-            <h1>TRRC Study App</h1>
+            <div class="header-content">
+                <h1>TRRC</h1>
+                <p class="subtitle">Rugby Referee Companion</p>
+            </div>
             <nav>
                 <div class="tab-container">
-                    <button class="tab-btn active" data-tab="rules">ルール参照</button>
-                    <button class="tab-btn" data-tab="quiz">クイズ</button>
-                    <button class="tab-btn" data-tab="stats">学習記録</button>
+                    <button class="tab-btn active" data-tab="rules">📖 ルール参照</button>
+                    <button class="tab-btn" data-tab="quiz">❓ クイズ</button>
+                    <button class="tab-btn" data-tab="stats">📊 学習記録</button>
                 </div>
             </nav>
         </header>
 
         <main>
             <section id="rules" class="content-section active">
-                <h2>📖 ルール参照</h2>
+                <div class="search-area">
+                    <input type="text" id="rule-search" placeholder="キーワードで検索（例：タックル、地面）">
+                    
+                    <div class="filter-chips">
+                        <button class="filter-btn active" data-law="all">すべて</button>
+                        <button class="filter-btn" data-law="15">Law 15</button>
+                        <button class="filter-btn" data-law="19">Law 19</button>
+                    </div>
+                </div>
+                
                 <div id="rule-display">
                     </div>
             </section>
 
             <section id="quiz" class="content-section">
                 <h2>❓ ルールクイズ</h2>
-                <p>クイズ機能は準備中です。</p>
+                <div class="placeholder-card">
+                    <p>クイズ機能は現在開発中です。<br>「ルール参照」タブで学習を始めましょう！</p>
+                </div>
             </section>
 
             <section id="stats" class="content-section">
                 <h2>📊 学習記録</h2>
-                <p>記録機能は準備中です。</p>
+                <div class="placeholder-card">
+                    <p>学習記録機能は準備中です。</p>
+                </div>
             </section>
         </main>
     </div>

@@ -1,0 +1,152 @@
+:root {
+    --primary-color: #1b4d3e; /* ラグビーグリーンのような深い緑 */
+    --accent-color: #e44134;  /* 警告カードのような赤 */
+    --bg-color: #f4f7f6;
+    --card-bg: #ffffff;
+    --text-color: #333333;
+}
+
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+header {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 20px 0 0 0;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content h1 {
+    margin: 0;
+    letter-spacing: 2px;
+}
+
+.subtitle {
+    font-size: 0.8em;
+    opacity: 0.8;
+    margin-bottom: 15px;
+}
+
+/* タブナビゲーション */
+.tab-container {
+    display: flex;
+    justify-content: center;
+    background: rgba(0,0,0,0.2);
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    background: none;
+    color: white;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: 0.3s;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn.active {
+    border-bottom: 3px solid white;
+    font-weight: bold;
+}
+
+/* メインコンテンツ */
+main {
+    padding: 20px;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.content-section {
+    display: none;
+}
+
+.content-section.active {
+    display: block;
+}
+
+/* 検索・フィルタエリア */
+.search-area {
+    margin-bottom: 20px;
+}
+
+#rule-search {
+    width: 100%;
+    padding: 12px;
+    border-radius: 25px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    font-size: 16px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.filter-chips {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 5px;
+}
+
+.filter-btn {
+    padding: 6px 15px;
+    border-radius: 20px;
+    border: 1px solid var(--primary-color);
+    background: white;
+    color: var(--primary-color);
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+/* ルールカード */
+.rule-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.rule-law-badge {
+    background: var(--accent-color);
+    color: white;
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.rule-card h3 {
+    margin: 10px 0;
+    font-size: 1.1em;
+    color: var(--primary-color);
+}
+
+.rule-card p {
+    margin: 0;
+    line-height: 1.6;
+    font-size: 0.95em;
+}
+
+.placeholder-card {
+    background: white;
+    padding: 40px 20px;
+    text-align: center;
+    border-radius: 12px;
+    color: #666;
+}
