@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     // ==========================================
-    // 0. 定数定義 (Law番号の表示名変換)
+    // 0. 定数・変数定義
     // ==========================================
     const LAW_LABELS = {
         100: "ラグビー憲章",
@@ -10,7 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
         1900: "19歳未満"
     };
 
-    // --- データ管理変数 ---
     let allRules = [];
     let currentLawFilter = 'all';
     let bookmarks = JSON.parse(localStorage.getItem('trrc_bookmarks') || '[]');
@@ -56,49 +55,41 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Lawボタン (ALL, 1, 2, 3...) を自動で作る
     function generateLawButtons() {
         const container = document.getElementById('law-filter-container');
         if (!container) return;
 
-        // DBにあるLaw番号を重複なしで取り出してソート
         const laws = [...new Set(allRules.map(r => r.law_number))].sort((a,b) => a - b);
 
         let html = `<button class="filter-chip active" data-law="all">ALL</button>`;
         laws.forEach(num => {
-            // 表示名をリストから取得、なければ "Law XX" とする
             const label = LAW_LABELS[num] ? LAW_LABELS[num] : `Law ${num}`;
             html += `<button class="filter-chip" data-law="${num}">${label}</button>`;
         });
         container.innerHTML = html;
 
-        // ボタンクリックイベント設定
         container.querySelectorAll('.filter-chip').forEach(btn => {
             btn.addEventListener('click', () => {
-                // 色を変える
                 container.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
-                
-                // 絞り込み実行
                 currentLawFilter = btn.dataset.law;
                 applyRuleFilters();
             });
         });
     }
 
-    // 検索ワードとLawボタンの状態を見てリストを表示する
     function applyRuleFilters() {
-        const searchVal = document.getElementById('rule-search').value.toLowerCase().trim();
+        const searchInput = document.getElementById('rule-search');
+        if(!searchInput) return; // 別のタブにいる場合など
+
+        const searchVal = searchInput.value.toLowerCase().trim();
         const display = document.getElementById('rules-list');
 
         const filtered = allRules.filter(r => {
-            // Law番号チェック
             const matchLaw = (currentLawFilter === 'all') || (r.law_number.toString() === currentLawFilter);
-            // キーワードチェック
             const title = (r.section_title || "").toLowerCase();
             const content = (r.content_jp || "").toLowerCase();
             const matchText = title.includes(searchVal) || content.includes(searchVal);
-
             return matchLaw && matchText;
         });
 
@@ -108,9 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         display.innerHTML = filtered.map(r => {
-            // カード上のバッジ表示名も変換する
             const badgeLabel = LAW_LABELS[r.law_number] ? LAW_LABELS[r.law_number] : `LAW ${r.law_number}`;
-
             return `
             <div class="card">
                 <div class="rule-header">
@@ -128,23 +117,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    // 検索窓に入力した時のイベント
-    document.getElementById('rule-search').addEventListener('input', applyRuleFilters);
+    const searchInput = document.getElementById('rule-search');
+    if(searchInput) searchInput.addEventListener('input', applyRuleFilters);
 
 
     // ==========================================
-    // 3. 動画投稿機能 (モーダル & API送信)
+    // 3. 動画投稿機能
     // ==========================================
     const modal = document.getElementById('upload-modal');
     const btnOpen = document.getElementById('btn-open-upload');
     const btnCancel = document.getElementById('btn-cancel');
     const btnSubmit = document.getElementById('btn-submit');
 
-    // モーダル開閉
     if(btnOpen) btnOpen.addEventListener('click', () => modal.classList.add('open'));
     if(btnCancel) btnCancel.addEventListener('click', () => modal.classList.remove('open'));
 
-    // 送信処理
     if(btnSubmit) btnSubmit.addEventListener('click', () => {
         const titleInput = document.getElementById('upload-title');
         const fileInput = document.getElementById('upload-file');
@@ -154,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // UIを送信中モードに
         btnSubmit.disabled = true;
         btnSubmit.textContent = '送信中...';
         document.getElementById('progress-wrapper').style.display = 'block';
@@ -165,24 +151,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const xhr = new XMLHttpRequest();
         
-        // 進捗バー更新
         xhr.upload.addEventListener('progress', (e) => {
             const percent = (e.loaded / e.total) * 100;
             document.getElementById('upload-progress-bar').style.width = percent + '%';
         });
 
-        // 完了時の処理
         xhr.onload = () => {
             if (xhr.status === 200) {
                 alert('投稿が完了しました！');
                 modal.classList.remove('open');
-                titleInput.value = ''; // 入力リセット
+                titleInput.value = '';
                 fileInput.value = '';
-                loadDiscussions(); // 一覧を更新
+                loadDiscussions(); 
             } else {
-                alert('エラーが発生しました: ' + xhr.responseText);
+                alert('エラー: ' + xhr.responseText);
             }
-            // UIを元に戻す
             btnSubmit.disabled = false;
             btnSubmit.textContent = '投稿する';
             document.getElementById('progress-wrapper').style.display = 'none';
@@ -190,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         xhr.onerror = () => {
-            alert('ネットワークエラーが発生しました');
+            alert('ネットワークエラー');
             btnSubmit.disabled = false;
         };
 
@@ -200,18 +183,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ==========================================
-    // 4. 議論フィード表示 (DBから取得)
+    // 4. 議論フィード機能 (投票 & コメント追加版)
     // ==========================================
     async function loadDiscussions() {
         const feed = document.getElementById('discussion-feed');
-        feed.innerHTML = '<p style="text-align:center;">最新の議論を取得中...</p>';
+        // 初回ロード時のみメッセージを出すなど調整しても良い
+        // feed.innerHTML = '<p style="text-align:center;">読み込み中...</p>';
 
         try {
             const res = await fetch('/api/get-discussions');
             const posts = await res.json();
 
             if (!posts || posts.length === 0) {
-                feed.innerHTML = '<p style="text-align:center; padding:30px;">まだ投稿がありません。<br>最初のケースを投稿してみましょう！</p>';
+                feed.innerHTML = '<p style="text-align:center; padding:30px;">まだ投稿がありません。</p>';
                 return;
             }
 
@@ -220,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const isSaved = bookmarks.includes(post.id);
 
                 return `
-                <div class="card">
+                <div class="card" id="post-${post.id}">
                     <div class="video-placeholder">
                         ▶️ VIDEO CASE (ID: ${post.id})
                     </div>
@@ -229,16 +213,35 @@ document.addEventListener('DOMContentLoaded', () => {
                     </div>
                     <h3 style="margin:0 0 15px;">${post.title}</h3>
                     
-                    <div class="poll-area">
-                        ${renderPollRow('PK', post.votes_pk, total)}
-                        ${renderPollRow('PlayOn', post.votes_playon, total)}
-                        ${renderPollRow('Yellow', post.votes_yc, total)}
+                    <div class="poll-actions">
+                        <button onclick="vote(${post.id}, 'pk')" class="btn-vote vote-pk">PK</button>
+                        <button onclick="vote(${post.id}, 'playon')" class="btn-vote vote-playon">Play On</button>
+                        <button onclick="vote(${post.id}, 'yc')" class="btn-vote vote-yc">Yellow</button>
                     </div>
 
-                    <div style="margin-top:15px; text-align:right;">
-                        <button onclick="window.toggleBookmark(${post.id})" style="background:none; border:1px solid #ddd; padding:5px 10px; border-radius:4px; cursor:pointer; color:${isSaved ? '#e53e3e' : '#718096'}">
+                    <div class="poll-area">
+                        ${renderPollRow('PK', post.votes_pk, total, '#e53e3e')}
+                        ${renderPollRow('PlayOn', post.votes_playon, total, '#38a169')}
+                        ${renderPollRow('Yellow', post.votes_yc, total, '#d69e2e')}
+                    </div>
+
+                    <div style="margin-top:15px; display:flex; justify-content:space-between; align-items:center;">
+                        <button onclick="toggleComments(${post.id})" class="nav-item" style="flex-direction:row; gap:5px; font-size:0.9rem; color:#4a5568;">
+                            <span>💬</span> コメント
+                        </button>
+                        
+                        <button onclick="window.toggleBookmark(${post.id})" style="background:none; border:none; cursor:pointer; font-size:0.9rem; color:${isSaved ? '#e53e3e' : '#718096'}">
                             ${isSaved ? '★ 保存済み' : '☆ 保存する'}
                         </button>
+                    </div>
+
+                    <div id="comments-section-${post.id}" class="comments-section" style="display:none;">
+                        <div class="comments-list" id="comments-list-${post.id}">
+                            </div>
+                        <div class="comment-input-area">
+                            <input type="text" id="comment-input-${post.id}" class="comment-input" placeholder="判定の根拠や意見を入力...">
+                            <button onclick="postComment(${post.id})" class="btn-comment-submit">送信</button>
+                        </div>
                     </div>
                 </div>`;
             }).join('');
@@ -249,21 +252,97 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderPollRow(label, count, total) {
+    // 投票バー描画用ヘルパー
+    function renderPollRow(label, count, total, color) {
         const percent = total > 0 ? Math.round((count / total) * 100) : 0;
         return `
         <div class="poll-row">
-            <div class="poll-label">${label}</div>
+            <div class="poll-label" style="font-size:0.75rem;">${label}</div>
             <div class="poll-track">
-                <div class="poll-fill" style="width: ${percent}%;"></div>
+                <div class="poll-fill" style="width: ${percent}%; background:${color};"></div>
             </div>
-            <div style="width:30px; text-align:right;">${percent}%</div>
+            <div style="width:30px; text-align:right; font-size:0.75rem;">${percent}%</div>
         </div>`;
     }
 
     // ==========================================
-    // 5. ブックマーク機能 (保存)
+    // 5. グローバル関数 (HTML側から呼ぶため window に登録)
     // ==========================================
+    
+    // --- 投票処理 ---
+    window.vote = async (id, type) => {
+        try {
+            const res = await fetch('/api/vote', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ id, type })
+            });
+            if(res.ok) {
+                // 成功したら画面を更新（簡易的にリロード）
+                loadDiscussions(); 
+            }
+        } catch(e) { console.error('Vote failed', e); }
+    };
+
+    // --- コメント表示切替 & 取得 ---
+    window.toggleComments = async (id) => {
+        const section = document.getElementById(`comments-section-${id}`);
+        const list = document.getElementById(`comments-list-${id}`);
+        
+        if (section.style.display === 'none') {
+            section.style.display = 'block';
+            list.innerHTML = '<p style="font-size:0.8rem; color:#aaa;">読み込み中...</p>';
+            
+            try {
+                const res = await fetch(`/api/comments?discussion_id=${id}`);
+                const comments = await res.json();
+                
+                if(comments.length === 0) {
+                    list.innerHTML = '<p style="font-size:0.8rem; padding:10px; color:#718096;">コメントはまだありません。</p>';
+                } else {
+                    list.innerHTML = comments.map(c => `
+                        <div class="comment-item">
+                            <div class="comment-meta">${c.author_name} • ${new Date(c.created_at).toLocaleDateString()}</div>
+                            <div class="comment-body">${c.content}</div>
+                        </div>
+                    `).join('');
+                }
+            } catch(e) {
+                list.innerHTML = '<p>読み込みエラー</p>';
+            }
+        } else {
+            section.style.display = 'none';
+        }
+    };
+
+    // --- コメント投稿 ---
+    window.postComment = async (id) => {
+        const input = document.getElementById(`comment-input-${id}`);
+        const content = input.value;
+        if(!content) return;
+
+        try {
+            const res = await fetch('/api/comments', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    discussion_id: id,
+                    content: content,
+                    author_name: 'Guest Ref'
+                })
+            });
+            
+            if(res.ok) {
+                input.value = '';
+                // コメントリストを更新するために一旦閉じて開く（簡易実装）
+                const section = document.getElementById(`comments-section-${id}`);
+                section.style.display = 'none';
+                window.toggleComments(id);
+            }
+        } catch(e) { alert('送信失敗'); }
+    };
+
+    // --- ブックマーク処理 ---
     window.toggleBookmark = (id) => {
         if (bookmarks.includes(id)) {
             bookmarks = bookmarks.filter(b => b !== id);
@@ -272,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         localStorage.setItem('trrc_bookmarks', JSON.stringify(bookmarks));
         
-        // 今見ている画面を更新
+        // 画面更新
         if (document.getElementById('tab-discussion').classList.contains('active')) {
             loadDiscussions();
         } else {
@@ -285,10 +364,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bookmarks.length === 0) {
             list.innerHTML = '<p style="padding:20px; text-align:center;">保存された議論はありません。</p>';
         } else {
-            list.innerHTML = `<p style="padding:10px;">現在 ${bookmarks.length} 件保存しています。<br>(詳細表示機能はAPI連携後に実装されます)</p>`;
+            list.innerHTML = `<p style="padding:10px;">現在 ${bookmarks.length} 件保存しています。</p>`;
         }
     }
 
-    // 最初の初期化
+    // 初期化
     loadRules();
 });
