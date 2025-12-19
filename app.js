@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     let allRules = [];
 
-    // --- 1. タブ切り替えロジック ---
+    // --- 1. タブ切り替え ---
     const tabs = document.querySelectorAll('.tab-btn');
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
@@ -10,12 +10,11 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
             document.getElementById(tab.dataset.tab).classList.add('active');
             
-            // ルールタブが選ばれた時にデータがなければロード
             if (tab.dataset.tab === 'rules' && allRules.length === 0) loadRules();
         });
     });
 
-    // --- 2. フィルタボタン生成 (IDを数値で管理) ---
+    // --- 2. フィルタボタン生成 (IDをSQLのlaw_numberと紐付け) ---
     const filterContainer = document.getElementById('law-filters');
     function createFilterUI() {
         const specialSections = [
@@ -41,14 +40,10 @@ document.addEventListener('DOMContentLoaded', () => {
         filterContainer.innerHTML = html;
     }
 
-    // --- 3. 補助関数（名称定義・罰則装飾） ---
+    // --- 3. 補助関数 ---
     function getSpecialName(lawNumber) {
         const specials = {
-            100: "ラグビー憲章",
-            200: "定義",
-            700: "7人制",
-            1000: "10人制",
-            1900: "19歳未満"
+            100: "ラグビー憲章", 200: "定義", 700: "7人制", 1000: "10人制", 1900: "19歳未満"
         };
         return specials[lawNumber];
     }
@@ -65,18 +60,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function decoratePenalty(text) {
-        // 罰則キーワードをカラーバッジに変換
+        if (!text) return "";
         return text.replace(/(ペナルティキック|PK)/g, '<span class="penalty-badge pb-pk">$1</span>')
                    .replace(/(フリーキック|FK)/g, '<span class="penalty-badge pb-fk">$1</span>')
                    .replace(/(スクラム)/g, '<span class="penalty-badge pb-scrum">$1</span>');
     }
 
-    // --- 4. データ取得 (キャッシュ機能付き) ---
+    // --- 4. データ取得 (SQL API経由) ---
     async function loadRules() {
         const display = document.getElementById('rule-display');
-        display.innerHTML = '<p style="text-align:center; padding:20px;">⏳ 競技規則を同期中...</p>';
+        display.innerHTML = '<p style="text-align:center; padding:20px;">⏳ データを読み込み中...</p>';
 
-        const cacheKey = 'trrc_v2025_final';
+        const cacheKey = 'trrc_sql_cache_2025';
         const cached = localStorage.getItem(cacheKey);
         
         if (cached) {
@@ -86,43 +81,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         try {
-            const response = await fetch('/api/get-rules'); // 実際のAPIエンドポイント
+            const response = await fetch('/api/get-rules'); 
             if (!response.ok) throw new Error('通信エラー');
             allRules = await response.json();
+            
+            // 重要: SQLからデータが来たらキャッシュ
             localStorage.setItem(cacheKey, JSON.stringify(allRules));
             renderRules(allRules);
         } catch (e) {
-            display.innerHTML = `<div class="rule-card" style="color:red; border-left-color:red;">⚠️ データの読み込みに失敗しました</div>`;
+            display.innerHTML = `<div class="rule-card" style="color:red;">⚠️ データ取得失敗: ${e.message}</div>`;
         }
     }
 
-    // --- 5. 描画処理 (バッジとハイライト) ---
+    // --- 5. 描画処理 ---
     function renderRules(rules, searchTerms = []) {
         const display = document.getElementById('rule-display');
         if (!rules.length) {
-            display.innerHTML = '<p style="text-align:center; padding:20px;">該当する項目が見つかりません</p>';
+            display.innerHTML = '<p style="text-align:center; padding:20px;">該当データなし</p>';
             return;
         }
 
         display.innerHTML = rules.map(rule => {
-            let title = rule.section_title;
-            let content = decoratePenalty(rule.content_jp);
+            let title = rule.section_title || "";
+            let content = decoratePenalty(rule.content_jp || "");
             
-            // バッジとカテゴリのテキスト決定
-            let badgeText = "";
-            let categoryText = "";
+            // 型に依存しないように law_number を数値化して判定
+            const lNum = parseInt(rule.law_number);
+            let badgeText = lNum >= 100 ? (getSpecialName(lNum) || "特別規定") : `LAW ${lNum}`;
+            let categoryText = lNum >= 100 ? "VARIATIONS" : getLawCategoryName(lNum);
 
-            if (rule.law_number >= 100) {
-                // 特別規定（憲章・定義・バリエーション）
-                badgeText = getSpecialName(rule.law_number) || "特別規定";
-                categoryText = "VARIATIONS";
-            } else {
-                // 通常条文
-                badgeText = `LAW ${rule.law_number}`;
-                categoryText = getLawCategoryName(rule.law_number);
-            }
-
-            // 検索語句のハイライト
             searchTerms.forEach(term => {
                 if (!term) return;
                 const regex = new RegExp(`(${term})`, 'gi');
@@ -142,24 +129,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }).join('');
     }
 
-    // --- 6. フィルタ・検索実行ロジック ---
+    // --- 6. フィルタ・検索 (型を揃えて比較) ---
     function filterAndSearch() {
         const query = document.getElementById('rule-search').value.toLowerCase().trim();
         const activeBtn = document.querySelector('.filter-btn.active');
         const searchTerms = query ? query.split(/\s+/) : [];
 
         const filtered = allRules.filter(r => {
-            // フィルタの一致確認
+            // フィルタ: ボタンのidとデータのlaw_numberを文字列で厳密比較
             let matchesFilter = true;
             if (activeBtn && activeBtn.dataset.type !== 'all') {
-                const targetId = activeBtn.dataset.id;
-                matchesFilter = (r.law_number.toString() === targetId.toString());
+                const targetId = activeBtn.dataset.id.toString();
+                const ruleLawNum = r.law_number.toString();
+                matchesFilter = (ruleLawNum === targetId);
             }
 
-            // AND検索の確認
+            // 検索: タイトルまたは本文に含まれるか
             const matchesSearch = searchTerms.every(term => 
-                r.content_jp.toLowerCase().includes(term) || 
-                r.section_title.toLowerCase().includes(term)
+                (r.content_jp && r.content_jp.toLowerCase().includes(term)) || 
+                (r.section_title && r.section_title.toLowerCase().includes(term))
             );
 
             return matchesFilter && matchesSearch;
@@ -168,23 +156,16 @@ document.addEventListener('DOMContentLoaded', () => {
         renderRules(filtered, searchTerms);
     }
 
-    // --- 7. イベント設定 ---
-    
-    // キーワード検索
+    // --- 7. イベント ---
     document.getElementById('rule-search').addEventListener('input', filterAndSearch);
-
-    // フィルタボタンクリック
     filterContainer.addEventListener('click', (e) => {
         const btn = e.target.closest('.filter-btn');
         if (!btn) return;
-
         document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-
         filterAndSearch();
     });
 
-    // 初期化実行
     createFilterUI();
     loadRules();
 });
