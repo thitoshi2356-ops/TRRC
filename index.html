@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TRRC - Rugby Referee Companion</title>
+    <title>TRRC - Rugby Referee Companion 2025</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="app">
         <header>
             <div class="header-content">
-                <h1>TRRC</h1>
+                <h1>TRRC 2025</h1>
                 <p class="subtitle">Rugby Referee Companion</p>
             </div>
             <nav>
@@ -25,12 +25,11 @@
         <main>
             <section id="rules" class="content-section active">
                 <div class="search-area">
-                    <input type="text" id="rule-search" placeholder="キーワードで検索（例：タックル、地面）">
+                    <input type="text" id="rule-search" placeholder="キーワード検索（例：スクラム 故意）">
                     
-                    <div class="filter-chips">
-                        <button class="filter-btn active" data-law="all">すべて</button>
-                        <button class="filter-btn" data-law="15">Law 15</button>
-                        <button class="filter-btn" data-law="19">Law 19</button>
+                    <div class="filter-container">
+                        <div id="law-filters">
+                            </div>
                     </div>
                 </div>
                 
@@ -41,14 +40,14 @@
             <section id="quiz" class="content-section">
                 <h2>❓ ルールクイズ</h2>
                 <div class="placeholder-card">
-                    <p>クイズ機能は現在開発中です。<br>「ルール参照」タブで学習を始めましょう！</p>
+                    <p>全21条対応のクイズ機能を準備中です。</p>
                 </div>
             </section>
 
             <section id="stats" class="content-section">
                 <h2>📊 学習記録</h2>
                 <div class="placeholder-card">
-                    <p>学習記録機能は準備中です。</p>
+                    <p>正答率や称号の管理機能を準備中です。</p>
                 </div>
             </section>
         </main>
